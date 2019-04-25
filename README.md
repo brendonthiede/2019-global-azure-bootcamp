@@ -16,6 +16,14 @@ Code samples for the [2019 Global Azure Bootcamp](https://www.digestibledevops.c
 
 ### Web App, Function App, Storage, and Cosmos DB
 
+## Running PowerShell Scripts
+
+In order to run unsigned scripts on Windows, you can run the following:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+```
+
 ## Deploying a Template
 
 1. Connect to Azure:
