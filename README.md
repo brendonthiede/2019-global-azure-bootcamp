@@ -37,3 +37,22 @@ Connect-AzAccount | Out-Null
 ```powershell
 Get-AzSubscription
 ```
+
+## System Prerequisite Notes
+
+### Git Config
+
+When first setting up git, you will need to configure your username and email:
+
+```powershell
+git config --global user.name "yourusername"
+git config --global user.email "youremail@mail.com"
+```
+
+### Setting PowerShell as the Default Shell
+
+On Ubuntu, to set PowerShell as the default shell, run the following and then logout and log back in (just starting a new shell is not enough):
+
+```powershell
+chsh -s /usr/bin/pwsh $USER
+```
