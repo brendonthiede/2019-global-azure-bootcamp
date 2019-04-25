@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountPrefix": {
+            "type": "string",
+            "maxLength": 11,
+            "defaultValue": "azwkshp",
+            "metadata": {
+                "description": "Specifies the name of the Azure Storage account. 24 length total"
+            }
+        },
+        "containerName": {
+            "type": "string",
+            "defaultValue": "myfiles",
+            "metadata": {
+                "description": "Specifies the name of the blob container."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Specifies the location in which the Azure Storage resources should be deployed."
+            }
+        }
+    },
+    "variables": {
+        "storageApiVersion": "2019-04-01",
+        "storageAccountName": "[concat(parameters('storageAccountPrefix'), uniqueString(subscription().subscriptionId))]",
+        "storageSku": "Standard_LRS"
+    },
+    "resources": [
+        {
+            "name": "[variables('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "location": "[parameters('location')]",
+            "apiVersion": "[variables('storageApiVersion')]",
+            "sku": {
+                "name": "[variables('storageSku')]"
+            },
+            "kind": "StorageV2",
+            "tags": {
+                "workshopstage": "1"
+            },
+            "properties": {
+                "accessTier": "Hot"
+            },
+            "resources": [
+                {
+                    "name": "[concat('default/', parameters('containerName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "[variables('storageApiVersion')]",
+                    "dependsOn": [
+                        "[variables('storageAccountName')]"
+                    ]
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[variables('storageAccountName')]"
+        },
+        "storageAccount": {
+            "type": "object",
+            "value": "[reference(variables('storageAccountName'))]"
+        }
+    }
+}
