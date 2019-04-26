@@ -39,8 +39,6 @@ if ($LASTEXITCODE -ne 0) {
     throw "Unit tests failed"
 }
 
-Pop-Location
-
 Write-Verbose "Packaging application code"
 $distFolder = "$PSScriptRoot/dist"
 $zipFilePath = "$distFolder/application.zip"
@@ -58,9 +56,25 @@ $outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
         -Location $Location `
         -Force:$Force `
         -Verbose:$VerbosePreference).Outputs
-    
+
+$siteUrl = "https://$($outputs.defaultHostName.value)"
+Write-Verbose "Waiting for $siteUrl to be available before code deployment"
+& $PSScriptRoot/Tests/node_modules/.bin/wait-on $siteUrl
+
 & "$parentFolder/New-WebAppDeployment.ps1" `
     -ZipFilePath $zipFilePath `
     -WebAppName $outputs.webAppName.value `
     -ResourceGroupName $ResourceGroupName `
     -Verbose:$VerbosePreference
+
+$siteUrl = "https://$($outputs.defaultHostName.value)"
+Write-Verbose "Waiting for $siteUrl to be available after code deployment"
+& $PSScriptRoot/Tests/node_modules/.bin/wait-on $siteUrl
+
+Write-Verbose "Running functional tests against $siteUrl"
+& $PSScriptRoot/Tests/node_modules/.bin/gulp functionaltest --webAppUrl "$siteUrl"
+if ($LASTEXITCODE -ne 0) {
+    throw "Functional tests failed"
+}
+
+Pop-Location

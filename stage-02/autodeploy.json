@@ -99,6 +99,10 @@
         "hostNames": {
             "type": "array",
             "value": "[reference(resourceId('Microsoft.Web/Sites', variables('webAppName'))).hostNames]"
+        },
+        "defaultHostName": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Web/Sites', variables('webAppName'))).defaultHostName]"
         }
     }
 }
