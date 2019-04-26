@@ -3,20 +3,50 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "webAppNamePrefix": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the prefix to use in the name of the web app, which is appended to a uniquestring."
+            }
         },
         "hostingPlanName": {
             "type": "string",
-            "defaultValue": "bootcamp-asplan"
+            "defaultValue": "bootcamp-asplan",
+            "metadata": {
+                "description": "Name for the App Service Plan."
+            }
         },
-        "sku": {
+        "appServicePlanSku": {
             "type": "string",
-            "defaultValue": "S1"
+            "defaultValue": "S1",
+            "allowedValues": [
+                "F1",
+                "D1",
+                "B1",
+                "B2",
+                "B3",
+                "S1",
+                "S2",
+                "S3",
+                "P1",
+                "P2",
+                "P3",
+                "P4"
+            ],
+            "metadata": {
+                "description": "SKU to use for the App Service Plan."
+            }
+        },
+        "appServicePlanCount": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Number of the App Service Plan instances to scale out to."
+            }
         }
     },
     "variables": {
         "webAppName": "[concat(parameters('webAppNamePrefix'), '-', uniqueString(subscription().subscriptionId))]",
-        "webAppName": "[concat(parameters('webAppNamePrefix'), '-', uniqueString(subscription().subscriptionId))]"
+        "workshopstage": "2"
     },
     "resources": [
         {
@@ -25,7 +55,11 @@
             "apiVersion": "2016-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
-                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "empty"
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "empty",
+                "workshopstage": "[variables('workshopstage')]"
+            },
+            "identity": {
+                "type": "SystemAssigned"
             },
             "resources": [
                 {
@@ -35,8 +69,7 @@
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites', variables('webAppName'))]"
                     ],
-                    "properties": {
-                    }
+                    "properties": {}
                 }
             ],
             "properties": {
@@ -64,16 +97,19 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "sku": {
-                "name": "[parameters('sku')]"
+                "name": "[parameters('appServicePlanSku')]"
             },
             "name": "[parameters('hostingPlanName')]",
             "apiVersion": "2015-08-01",
             "location": "[resourceGroup().location]",
+            "tags": {
+                "workshopstage": "[variables('workshopstage')]"
+            },
             "properties": {
                 "name": "[parameters('hostingPlanName')]",
                 "workerSizeId": "0",
                 "reserved": false,
-                "numberOfWorkers": 1,
+                "numberOfWorkers": "[parameters('appServicePlanCount')]",
                 "hostingEnvironment": ""
             }
         },
@@ -83,7 +119,8 @@
             "apiVersion": "2014-04-01",
             "location": "[resourceGroup().location]",
             "tags": {
-                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webAppName'))]": "Resource"
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webAppName'))]": "Resource",
+                "workshopstage": "[variables('workshopstage')]"
             },
             "properties": {
                 "applicationId": "[variables('webAppName')]",
