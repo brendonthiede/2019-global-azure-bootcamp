@@ -40,8 +40,8 @@ Here are some PowerShell commands to get you connected to a subscription:
 # List your subscriptions:
 Get-AzSubscription | Select-Object -Property Name
 
-# Switch to a different subscription ("Visual Studio Enterprise" in this case):
-(Set-AzContext -Subscription "Visual Studio Enterprise").Subscription.Name
+# Switch to a different subscription ("Azure Pass - Sponsorship" in this case):
+(Set-AzContext -Subscription "Azure Pass - Sponsorship").Subscription.Name
 ```
 
 ### Creating a Resource Group
