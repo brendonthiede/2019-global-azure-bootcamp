@@ -44,7 +44,7 @@ $distFolder = "$PSScriptRoot/dist"
 $zipFilePath = "$distFolder/application.zip"
 $appFolder = "$PSScriptRoot/Application"
 New-Item -Path $distFolder -ItemType Directory -ErrorAction SilentlyContinue -Force
-Compress-Archive -Path "$appFolder/*" -DestinationPath $zipFilePath -Force -Verbose:$VerbosePreference
+Compress-Archive -Path "$appFolder/*" -DestinationPath $zipFilePath -Force
 
 $parentFolder = "$PSScriptRoot/.."
 
