@@ -26,16 +26,39 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 ## Deploying a Template
 
-1. Connect to Azure:
+### Connecting to a subscription
+
+Here are some PowerShell commands to get you connected to a subscription:
 
 ```powershell
-Connect-AzAccount | Out-Null
+# Connect to Azure:
+(Connect-AzAccount).Subscription.Name
+
+# Show current subscription:
+(Get-AzContext).Subscription.Name
+
+# List your subscriptions:
+Get-AzSubscription | Select-Object -Property Name
+
+# Switch to a different subscription ("Visual Studio Enterprise" in this case):
+(Set-AzContext -Subscription "Visual Studio Enterprise").Subscription.Name
 ```
 
-2. List your subscriptions:
+### Creating a Resource Group
+
+You need to create a resource group before you can deploy to it. This is an example of a resource group named "bootcamp-rg" in the "East US" region:
 
 ```powershell
-Get-AzSubscription
+(New-AzResourceGroup -Name bootcamp-rg -Location eastus -Force).ProvisioningState
+```
+
+### Deploying the ARM Template
+
+Provide any required parameters either through the command line or using a parameters file:
+
+```powershell
+$DeploymentName = "$(Get-Date -Format "yyyyMMddHHmmss")$env:COMPUTERNAME"
+New-AzResourceGroupDeployment -Name $DeploymentName -ResourceGroupName bootcamp-rg -Mode Incremental -TemplateFile .\stage-01\autodeploy.json
 ```
 
 ## System Prerequisite Notes
@@ -99,3 +122,18 @@ From a PowerShell prompt, run:
 ```powershell
 Install-Module -Name Az -AllowClobber -Scope CurrentUser
 ```
+
+### Installing ChromeDriver
+
+Install ChromeDriver from [http://chromedriver.storage.googleapis.com/index.html](http://chromedriver.storage.googleapis.com/index.html) by downloading the latest zip file for your operating system and then putting the executable from the zip into your path.
+
+Example for Windows:
+
+```powershell
+Invoke-WebRequest "http://chromedriver.storage.googleapis.com/74.0.3729.6/chromedriver_win32.zip" -OutFile chromedriver_win32.zip
+Expand-Archive -Path .\chromedriver_win32.zip -DestinationPath $env:USERPROFILE\bin
+$systemPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User') + ";$env:USERPROFILE\bin" -replace ';;',';'
+[System.Environment]::SetEnvironmentVariable('PATH', $systemPath, 'User')
+$env:PATH += ";$env:USERPROFILE\bin"
+```
+

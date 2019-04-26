@@ -7,7 +7,7 @@
             "maxLength": 11,
             "defaultValue": "azwkshp",
             "metadata": {
-                "description": "Specifies the name of the Azure Storage account. 24 length total"
+                "description": "Specifies the prefix to use in the name of the Azure Storage account, which is appended to a uniquestring."
             }
         },
         "containerName": {
@@ -63,9 +63,9 @@
             "type": "string",
             "value": "[variables('storageAccountName')]"
         },
-        "storageAccount": {
+        "storageAccountPrimaryEndpoints": {
             "type": "object",
-            "value": "[reference(variables('storageAccountName'))]"
+            "value": "[reference(variables('storageAccountName')).primaryEndpoints]"
         }
     }
 }
