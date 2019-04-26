@@ -60,6 +60,20 @@ git config --global user.name "yourusername"
 git config --global user.email "youremail@mail.com"
 ```
 
+On Linux or a Mac you may want to set up an SSH key to automatically authenticate you:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "youremail@mail.com"
+```
+
+If you use the defaults you can grab the public key like this:
+
+```bash
+cat /home/brendon/.ssh/id_rsa.pub
+```
+
+And then add that to your GitHub account at [https://github.com/settings/ssh/new](https://github.com/settings/ssh/new)
+
 ### Installing PowerShell on Ubuntu
 
 ```bash
