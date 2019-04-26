@@ -1,7 +1,7 @@
 var gulp = require('gulp');
 var ncp = require('child_process');
 
-gulp.task("unittest", () => {
+gulp.task("unittest", async () => {
     var options = {
         stdio: 'inherit'
     };
@@ -15,7 +15,7 @@ gulp.task("unittest", () => {
     }
 })
 
-gulp.task("functionaltest", () => {
+gulp.task("functionaltest", async () => {
     var webAppUrl, indexOfWebAppUrlOption = process.argv.indexOf("--webAppUrl");
     if (indexOfWebAppUrlOption > -1) {
         webAppUrl = process.argv[indexOfWebAppUrlOption + 1];
