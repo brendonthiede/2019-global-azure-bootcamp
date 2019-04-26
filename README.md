@@ -125,6 +125,17 @@ Install-Module -Name Az -AllowClobber -Scope CurrentUser
 
 ### Installing ChromeDriver
 
+You will need to install Chrome in order to use the ChromeDriver. To install Chrome on Ubuntu, you can run this:
+
+```bash
+sudo echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+wget https://dl.google.com/linux/linux_signing_key.pub
+sudo apt-key add linux_signing_key.pub
+sudo apt update
+sudo apt install google-chrome-stable
+rm ./linux_signing_key.pub
+```
+
 Install ChromeDriver from [http://chromedriver.storage.googleapis.com/index.html](http://chromedriver.storage.googleapis.com/index.html) by downloading the latest zip file for your operating system and then putting the executable from the zip into your path.
 
 Example for Windows:
@@ -137,3 +148,11 @@ $systemPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User') + ";$
 $env:PATH += ";$env:USERPROFILE\bin"
 ```
 
+Example for Linux:
+
+```bash
+wget -q https://chromedriver.storage.googleapis.com/74.0.3729.6/chromedriver_linux64.zip
+unzip ./chromedriver_linux64.zip
+rm ./chromedriver_linux64.zip
+sudo mv ./chromedriver /usr/local/bin/ -f
+```
