@@ -34,6 +34,7 @@ Set-Location $PSScriptRoot/Tests
 npm install
 
 Write-Verbose "Running Unit Tests"
+Set-Location $PSScriptRoot/Tests
 ./node_modules/.bin/gulp unittest
 if ($LASTEXITCODE -ne 0) {
     throw "Unit tests failed"
@@ -69,10 +70,12 @@ Write-Verbose "Waiting for $siteUrl to be available before code deployment"
 
 $siteUrl = "https://$($outputs.defaultHostName.value)"
 Write-Verbose "Waiting for $siteUrl to be available after code deployment"
-& $PSScriptRoot/Tests/node_modules/.bin/wait-on $siteUrl
+Set-Location $PSScriptRoot/Tests
+& ./node_modules/.bin/wait-on $siteUrl
 
 Write-Verbose "Running functional tests against $siteUrl"
-& $PSScriptRoot/Tests/node_modules/.bin/gulp functionaltest --webAppUrl "$siteUrl"
+Set-Location $PSScriptRoot/Tests
+& ./node_modules/.bin/gulp functionaltest --webAppUrl "$siteUrl"
 if ($LASTEXITCODE -ne 0) {
     throw "Functional tests failed"
 }
