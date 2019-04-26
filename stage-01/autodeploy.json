@@ -27,7 +27,7 @@
         "storageApiVersion": "2019-04-01",
         "storageAccountName": "[concat(parameters('storageAccountPrefix'), uniqueString(subscription().subscriptionId))]",
         "storageSku": "Standard_LRS",
-        "workshopstage": "1"
+        "workshopStage": "1"
     },
     "resources": [
         {
@@ -40,7 +40,7 @@
             },
             "kind": "StorageV2",
             "tags": {
-                "workshopstage": "[variables('workshopstage')]"
+                "workshopStage": "[variables('workshopStage')]"
             },
             "properties": {
                 "accessTier": "Hot"
