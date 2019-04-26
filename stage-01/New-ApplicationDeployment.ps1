@@ -2,10 +2,10 @@
 param (
     [ValidateLength(0, 11)]
     [string]
-    $storageAccountPrefix = "azwkshp",
+    $StorageAccountPrefix = "bootcamp",
 
     [string]
-    $containerName = "myfiles",
+    $ContainerName = "`$web",
 
     [string]
     $DeploymentName = "$(Get-Date -Format "yyyyMMddHHmmss")$env:COMPUTERNAME",
@@ -20,11 +20,22 @@ param (
     $Force
 )
 
-& $PSScriptRoot/../New-StageResourceDeployment.ps1 `
-    -TemplateFile $PSScriptRoot/autodeploy.json `
-    -TemplateParameterObject @{"storageAccountPrefix" = "$storageAccountPrefix"; "containerName" = "$containerName"} `
-    -DeploymentName $DeploymentName `
+$ErrorActionPreference = "Stop"
+
+$parentFolder = "$PSScriptRoot/.."
+
+$outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
+        -TemplateFile $PSScriptRoot/autodeploy.json `
+        -TemplateParameterObject @{"storageAccountPrefix" = "$StorageAccountPrefix"; "containerName" = "$ContainerName"} `
+        -DeploymentName $DeploymentName `
+        -ResourceGroupName $ResourceGroupName `
+        -Location $Location `
+        -Force:$Force `
+        -Verbose:$VerbosePreference).Outputs
+
+& "$parentFolder/New-BlobDeployment.ps1" `
+    -FolderToUpload "$PSScriptRoot/site" `
     -ResourceGroupName $ResourceGroupName `
-    -Location $Location `
-    -Force:$Force `
+    -StorageAccountName $outputs.storageAccountName.Value `
+    -ContainerName $ContainerName `
     -Verbose:$VerbosePreference

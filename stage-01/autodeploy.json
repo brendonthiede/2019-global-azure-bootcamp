@@ -5,14 +5,12 @@
         "storageAccountPrefix": {
             "type": "string",
             "maxLength": 11,
-            "defaultValue": "azwkshp",
             "metadata": {
                 "description": "Specifies the prefix to use in the name of the Azure Storage account, which is appended to a uniquestring."
             }
         },
         "containerName": {
             "type": "string",
-            "defaultValue": "myfiles",
             "metadata": {
                 "description": "Specifies the name of the blob container."
             }
@@ -28,7 +26,8 @@
     "variables": {
         "storageApiVersion": "2019-04-01",
         "storageAccountName": "[concat(parameters('storageAccountPrefix'), uniqueString(subscription().subscriptionId))]",
-        "storageSku": "Standard_LRS"
+        "storageSku": "Standard_LRS",
+        "workshopstage": "1"
     },
     "resources": [
         {
@@ -41,7 +40,7 @@
             },
             "kind": "StorageV2",
             "tags": {
-                "workshopstage": "1"
+                "workshopstage": "[variables('workshopstage')]"
             },
             "properties": {
                 "accessTier": "Hot"
@@ -63,9 +62,9 @@
             "type": "string",
             "value": "[variables('storageAccountName')]"
         },
-        "storageAccountPrimaryEndpoints": {
-            "type": "object",
-            "value": "[reference(variables('storageAccountName')).primaryEndpoints]"
+        "storageAccountBlobEndpoint": {
+            "type": "string",
+            "value": "[reference(variables('storageAccountName')).primaryEndpoints.blob]"
         }
     }
 }
