@@ -22,9 +22,9 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-$parentFolder = "$PSScriptRoot/.."
+Import-Module "$PSScriptRoot/../BootcampUtilities.psm1" -Force
 
-$outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
+$outputs = (New-BootcampResourceGroupDeployment `
         -TemplateFile $PSScriptRoot/autodeploy.json `
         -TemplateParameterObject @{"storageAccountPrefix" = "$StorageAccountPrefix"; "containerName" = "$ContainerName"} `
         -DeploymentName $DeploymentName `
@@ -33,7 +33,7 @@ $outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
         -Force:$Force `
         -Verbose:$VerbosePreference).Outputs
 
-& "$parentFolder/New-BlobDeployment.ps1" `
+New-BootcampBlobDeployment `
     -FolderToUpload "$PSScriptRoot/site" `
     -ResourceGroupName $ResourceGroupName `
     -StorageAccountName $outputs.storageAccountName.Value `

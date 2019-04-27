@@ -18,6 +18,8 @@ param (
 
 $ErrorActionPreference = "Stop"
 
+Import-Module "$PSScriptRoot/../BootcampUtilities.psm1" -Force
+
 trap {
     "Error found: $_"
     Pop-Location
@@ -47,9 +49,7 @@ $appFolder = "$PSScriptRoot/Application"
 New-Item -Path $distFolder -ItemType Directory -ErrorAction SilentlyContinue -Force
 Compress-Archive -Path "$appFolder/*" -DestinationPath $zipFilePath -Force
 
-$parentFolder = "$PSScriptRoot/.."
-
-$outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
+$outputs = (New-BootcampResourceGroupDeployment `
         -TemplateFile $PSScriptRoot/autodeploy.json `
         -TemplateParameterObject @{"webAppNamePrefix" = "$webAppNamePrefix"} `
         -DeploymentName $DeploymentName `
@@ -60,9 +60,10 @@ $outputs = (& "$parentFolder/New-StageResourceDeployment.ps1" `
 
 $siteUrl = "https://$($outputs.defaultHostName.value)"
 Write-Verbose "Waiting for $siteUrl to be available before code deployment"
-& $PSScriptRoot/Tests/node_modules/.bin/wait-on $siteUrl
+Set-Location $PSScriptRoot/Tests
+./node_modules/.bin/wait-on $siteUrl
 
-& "$parentFolder/New-WebAppDeployment.ps1" `
+New-BootcampWebAppDeployment `
     -ZipFilePath $zipFilePath `
     -WebAppName $outputs.webAppName.value `
     -ResourceGroupName $ResourceGroupName `
@@ -71,11 +72,11 @@ Write-Verbose "Waiting for $siteUrl to be available before code deployment"
 $siteUrl = "https://$($outputs.defaultHostName.value)"
 Write-Verbose "Waiting for $siteUrl to be available after code deployment"
 Set-Location $PSScriptRoot/Tests
-& ./node_modules/.bin/wait-on $siteUrl
+./node_modules/.bin/wait-on $siteUrl
 
 Write-Verbose "Running functional tests against $siteUrl"
 Set-Location $PSScriptRoot/Tests
-& ./node_modules/.bin/gulp functionaltest --webAppUrl "$siteUrl"
+./node_modules/.bin/gulp functionaltest --webAppUrl "$siteUrl"
 if ($LASTEXITCODE -ne 0) {
     throw "Functional tests failed"
 }
