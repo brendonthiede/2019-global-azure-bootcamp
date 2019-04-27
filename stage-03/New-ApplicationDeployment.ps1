@@ -32,7 +32,6 @@ $myIP = (Invoke-RestMethod https://ipinfo.io/ip).Trim()
 $sqlServerAdminGroup = (New-BootcampSQLServerAdminGroup)
 
 $templateParameters = @{
-    "webAppNamePrefix"  = "$webAppNamePrefix"
     "sqlAdminPassword"  = "$randomPassword"
     "myIP"              = "$myIP"
     "AADAdminGroupName" = "$($sqlServerAdminGroup.DisplayName)"
