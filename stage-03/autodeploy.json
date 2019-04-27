@@ -1,0 +1,191 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlServerNamePrefix": {
+            "type": "string",
+            "defaultValue": "bootcamp",
+            "metadata": {
+                "description": "Name for the Azure SQL Server"
+            }
+        },
+        "sqlDatabaseName": {
+            "type": "string",
+            "defaultValue": "bootcampdb",
+            "metadata": {
+                "description": "Name of the database to be created"
+            }
+        },
+        "sqlAdminUsername": {
+            "type": "string",
+            "defaultValue": "bootcampadmin",
+            "metadata": {
+                "description": "Username of the SQL admin"
+            }
+        },
+        "sqlAdminPassword": {
+            "type": "securestring",
+            "minLength": 20,
+            "maxLength": 128,
+            "metadata": {
+                "description": "Password of the SQL admin. Password complexity rules can be found here: https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-2017#password-complexity"
+            }
+        },
+        "myIP": {
+            "type": "string",
+            "metadata": {
+                "description": "IP address to add for the current user"
+            }
+        },
+        "collation": {
+            "type": "string",
+            "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+            "metadata": {
+                "description": "The database collation for governing the proper use of characters."
+            }
+        },
+        "edition": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "The type of database to create."
+            }
+        },
+        "maxSizeBytes": {
+            "type": "string",
+            "defaultValue": "1073741824",
+            "metadata": {
+                "description": "The maximum size, in bytes, for the database"
+            }
+        },
+        "requestedServiceObjectiveName": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic",
+                "S0",
+                "S1",
+                "S2",
+                "P1",
+                "P2",
+                "P3"
+            ],
+            "metadata": {
+                "description": "Describes the performance level for Edition"
+            }
+        },
+        "AADAdminGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "The group name of the Azure AD Admin group for the SQL Server"
+            }
+        },
+        "AADAdminGroupId": {
+            "type": "string",
+            "metadata": {
+                "description": "The group ID of the Azure AD Admin group for the SQL Server"
+            }
+        }
+    },
+    "variables": {
+        "workshopStage": "3",
+        "sqlServerName": "[concat(parameters('sqlServerNamePrefix'), uniqueString(subscription().subscriptionId), '-sqlserver')]",
+        "firewallRules": [
+            {
+                "firewallRuleName": "AllowAllWindowsAzureIps",
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+            },
+            {
+                "firewallRuleName": "My IP",
+                "startIpAddress": "[parameters('myIP')]",
+                "endIpAddress": "[parameters('myIP')]"
+            }
+        ]
+    },
+    "resources": [
+        {
+            "name": "[variables('sqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "SqlServer",
+                "workshopStage": "[variables('workshopStage')]"
+            },
+            "apiVersion": "2014-04-01-preview",
+            "properties": {
+                "administratorLogin": "[parameters('sqlAdminUsername')]",
+                "administratorLoginPassword": "[parameters('sqlAdminPassword')]",
+                "version": "12.0"
+            },
+            "resources": [
+                {
+                    "name": "[parameters('sqlDatabaseName')]",
+                    "type": "databases",
+                    "location": "[resourceGroup().location]",
+                    "tags": {
+                        "displayName": "Database",
+                        "workshopStage": "[variables('workshopStage')]"
+                    },
+                    "apiVersion": "2014-04-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', variables('sqlServerName'))]"
+                    ],
+                    "properties": {
+                        "edition": "[parameters('edition')]",
+                        "collation": "[parameters('collation')]",
+                        "maxSizeBytes": "[parameters('maxSizeBytes')]",
+                        "requestedServiceObjectiveName": "[parameters('requestedServiceObjectiveName')]"
+                    }
+                },
+                {
+                    "type": "administrators",
+                    "name": "activeDirectory",
+                    "apiVersion": "2014-04-01-preview",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "administratorType": "ActiveDirectory",
+                        "login": "[parameters('AADAdminGroupName')]",
+                        "sid": "[parameters('AADAdminGroupId')]",
+                        "tenantId": "[subscription().tenantId]"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', variables('sqlServerName'))]"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "name": "[concat(variables('sqlServerName'), '/', variables('firewallRules')[copyIndex()].firewallRuleName)]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "startIpAddress": "[variables('firewallRules')[copyIndex()].startIpAddress]",
+                "endIpAddress": "[variables('firewallRules')[copyIndex()].endIpAddress]"
+            },
+            "copy": {
+                "name": "firewallRulesCopy",
+                "count": "[length(variables('firewallRules'))]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+            ]
+        }
+    ],
+    "outputs": {
+        "sqlServerHostName": {
+            "type": "string",
+            "value": "[reference(variables('sqlServerName')).fullyQualifiedDomainName]"
+        },
+        "sqlDatabaseName": {
+            "type": "string",
+            "value": "[parameters('sqlDatabaseName')]"
+        }
+    }
+}
