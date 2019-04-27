@@ -88,7 +88,11 @@ function New-BootcampBlobDeployment {
     
         [Parameter(Mandatory = $True)]
         [string]
-        $ContainerName
+        $ContainerName,
+
+        [Parameter(Mandatory = $False)]
+        [string]
+        $BlobPrefix = ""
     )
 
     $storageAccount = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
@@ -101,12 +105,15 @@ function New-BootcampBlobDeployment {
             ".png" { $mimeType = "image/png" }
             ".jpg" { $mimeType = "image/jpeg" }
             ".gif" { $mimeType = "image/gif" }
+            ".txt" { $mimeType = "text/plain" }
+            ".md" { $mimeType = "text/plain" }
+            ".ico" { $mimeType = "image/x-icon" }
             Default { $mimeType = "application/octet-stream" }
         }
 
         Write-Verbose "Uploading $($_.Name) as $mimeType to $StorageAccountName/$ContainerName"
         Set-AzStorageBlobContent -File $_.FullName `
-            -Blob $_.Name `
+            -Blob "$($BlobPrefix)$($_.Name)" `
             -Context $storageAccount.Context `
             -Container $ContainerName `
             -Properties @{"ContentType" = $mimeType} `
@@ -227,6 +234,23 @@ function New-BootcampWebAppDeployment {
     
     Write-Verbose "Deploying application bundle"
     Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization = ("Basic {0}" -f $base64AuthInfo)} -UserAgent $userAgent -Method POST -InFile $ZipFilePath -ContentType "multipart/form-data"
+}
+
+function New-BootcampSQLServerAdminGroup {
+    [CmdletBinding()]
+    param (
+        [string]
+        $SQLServerAdminGroupName = "SQLServerAdmins",
+
+        [string]
+        $SQLServerAdminGroupMailNickname = "SQLServerAdminGroup"
+    )
+
+    if (-not (Get-AzADGroup -DisplayName "$SQLServerAdminGroupName" -ErrorAction SilentlyContinue)) {
+        Write-Verbose "Creating new Azure AD group for $SQLServerAdminGroupName"
+        New-AzADGroup -DisplayName "$SQLServerAdminGroupName" -MailNickname "$SQLServerAdminGroupMailNickname"
+    }
+    (Get-AzADGroup -DisplayName "$SQLServerAdminGroupName")[0]
 }
 
 Export-ModuleMember -Function *
