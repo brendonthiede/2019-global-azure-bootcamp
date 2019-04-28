@@ -10,10 +10,6 @@ Code samples for the [2019 Global Azure Bootcamp](https://www.digestibledevops.c
 
 ### Web App with Azure Database
 
-### Web App wih Cosmos DB
-
-### Function App (storage)
-
 ### Web App, Function App, Storage, and Cosmos DB
 
 ## Running PowerShell Scripts
