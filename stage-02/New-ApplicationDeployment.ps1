@@ -58,6 +58,10 @@ $outputs = (New-BootcampResourceGroupDeployment `
         -Force:$Force `
         -Verbose:$VerbosePreference).Outputs
 
+if (-not $outputs) {
+    throw "ARM template deployment failed"
+}
+
 $siteUrl = "https://$($outputs.defaultHostName.value)"
 Write-Verbose "Waiting for $siteUrl to be available before code deployment"
 Set-Location $PSScriptRoot/Tests
